@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "outDir": "tsc",
+    "baseUrl": ".",
+    "paths": {
+      "~/*": [
+        "src/*"
+      ]
+    },
+    "module": "commonjs",
+    "target": "es6",
+    "allowJs": true,
+    "noImplicitAny": false,
+    "sourceMap": false,
+    "esModuleInterop": true,
+    "strict": true
+  },
+  "include": [
+    "src",
+    "public",
+  ],
+  "exclude": [
+    "node_modules",
+    "build",
+    "tsc",
+    "log",
+  ]
+}

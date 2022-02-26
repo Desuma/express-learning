@@ -1,0 +1,7 @@
+node_modules
+build
+tsc
+log
+package-lock.json
+yarn.lock
+yarn-error.log
