@@ -19,23 +19,23 @@ export interface AppParams {
   /**
    * 应用监听端口
    */
-  AppPort: number;
+  AppPort?: number;
   /**
    * MySQL 登录地址
    */
-  MySQLHost: string;
+  MySQLHost?: string;
   /**
    * MySQL 监听端口
    */
-  MySQLPort: number;
+  MySQLPort?: number;
   /**
    * MySQL 登陆用户名
    */
-  MySQLName: string;
+  MySQLName?: string;
   /**
    * MySQL 登录密码
    */
-  MySQLPassword: string;
+  MySQLPassword?: string;
 }
 
 export default {

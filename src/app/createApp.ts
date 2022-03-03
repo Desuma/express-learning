@@ -1,10 +1,15 @@
 import express from 'express';
 import path from 'path';
 
-import { accessLog, accessNanoid } from '~/util';
+import { accessLog, accessNanoid, Ilogger } from '~/util';
 import { uploadRouter, userRouter } from '~/routes';
 
-export const crreateApp = (PORT: number) => {
+export const crreateApp = (PORT?: number) => {
+  Ilogger.info({
+    msg: 'Begin to start initiating app.',
+    isStart: true
+  });
+
   const app = express();
 
   app.use(express.urlencoded({ extended: false }));
@@ -28,7 +33,14 @@ export const crreateApp = (PORT: number) => {
    * 监听端口并启动项目
    */
   app.listen(PORT, () => {
-    console.log(`App is runing! http://localhost:${PORT}`);
+    const logMsg = `App is runing! http://localhost:${PORT}`;
+
+    Ilogger.info({
+      msg: logMsg,
+      isStart: true
+    });
+
+    console.log(logMsg);
   });
 };
 

@@ -1,9 +1,11 @@
-import { isEmpty } from 'lodash';
+import { assign, isEmpty } from 'lodash';
 import readlineSync from 'readline-sync';
 
 import { E_EXPRESS_DEV_PARAMS, E_EXPRESS_PARAMS } from '~/enums';
 import { AppParams } from '~/types';
 import { isDev } from '~/util';
+
+const params: AppParams = {};
 
 const getAppPort = (): number => {
   const AppPort = readlineSync.questionInt(
@@ -76,6 +78,8 @@ export const getStartParams = () => {
   let MySQLName: string;
   let MySQLPassword: string;
 
+  !isEmpty(params) && (() => params)();
+
   if (isDev()) {
     AppPort = E_EXPRESS_DEV_PARAMS.AppPort;
     MySQLHost = E_EXPRESS_DEV_PARAMS.MySQLHost;
@@ -90,11 +94,13 @@ export const getStartParams = () => {
     MySQLPassword = getMySQLPassword();
   }
 
-  return {
+  assign(params, {
     AppPort,
     MySQLHost,
     MySQLPort,
     MySQLName,
     MySQLPassword,
-  } as AppParams;
+  });
+
+  return params;
 };

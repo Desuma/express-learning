@@ -2,13 +2,27 @@ import express from 'express';
 import { isEmpty } from 'lodash';
 
 import { Request, Response } from '~/types';
-import { onUpload } from '~/util';
+import { Ilogger, onUpload } from '~/util';
 
 export const uploadRouter = express.Router();
 
 uploadRouter.post('/', (req: Request, res: Response) => {
   onUpload(req, res, err => {
-    return isEmpty(err) ? res.send('upload was successed!') : res.send('upload was faild!');;
+    if (isEmpty(err)) {
+      Ilogger.info({
+        msg: 'upload was successed!',
+        resquest: req,
+      });
+
+      res.send('upload was successed!')
+    } else {
+      Ilogger.error({
+        msg: err,
+        resquest: req,
+      });
+
+      res.send('upload was faild!')
+    }
   });
 });
 

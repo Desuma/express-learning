@@ -1,6 +1,6 @@
 import multer from 'multer';
 
-import { mkdirIfNotExits } from '~/util';
+import { mkdirIfNotExits } from './fsExtension';
 
 /**
  * 生成文件存储池
