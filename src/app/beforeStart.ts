@@ -3,7 +3,7 @@ import readlineSync from 'readline-sync';
 
 import { E_EXPRESS_DEV_PARAMS, E_EXPRESS_PARAMS } from '~/enums';
 import { AppParams } from '~/types';
-import { isDev } from '~/util';
+import { Ilogger, isDev } from '~/util';
 
 const params: AppParams = {};
 
@@ -71,14 +71,17 @@ const getMySQLPassword = (): string => {
   return MySQLPassword;
 };
 
-export const getStartParams = () => {
+export const beforeStart = () => {
   let AppPort: number;
   let MySQLHost: string;
   let MySQLPort: number;
   let MySQLName: string;
   let MySQLPassword: string;
 
-  !isEmpty(params) && (() => params)();
+  Ilogger.info({
+    msg: 'Before start initiating app.',
+    isStart: true
+  });
 
   if (isDev()) {
     AppPort = E_EXPRESS_DEV_PARAMS.AppPort;
@@ -102,5 +105,10 @@ export const getStartParams = () => {
     MySQLPassword,
   });
 
-  return params;
+  Ilogger.info({
+    msg: 'Before start initiating app. Done.',
+    isStart: true
+  });
 };
+
+export const getStartParams = (): AppParams => params;

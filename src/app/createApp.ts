@@ -1,14 +1,19 @@
 import express from 'express';
 import path from 'path';
 
-import { accessLog, accessNanoid, Ilogger } from '~/util';
+import { Ilogger } from '~/util';
 import { uploadRouter, userRouter } from '~/routes';
+import { accessLog, accessNanoid } from '~/middleware';
 
-export const crreateApp = (PORT?: number) => {
+import { getStartParams } from './beforeStart';
+
+export const crreateApp = () => {
   Ilogger.info({
     msg: 'Begin to start initiating app.',
     isStart: true
   });
+
+  const { AppPort } = getStartParams();
 
   const app = express();
 
@@ -32,8 +37,8 @@ export const crreateApp = (PORT?: number) => {
   /**
    * 监听端口并启动项目
    */
-  app.listen(PORT, () => {
-    const logMsg = `App is runing! http://localhost:${PORT}`;
+  app.listen(AppPort, () => {
+    const logMsg = `App is runing! http://localhost:${AppPort}`;
 
     Ilogger.info({
       msg: logMsg,

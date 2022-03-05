@@ -1,5 +1,5 @@
-import { getStartParams, crreateApp } from './app';
+import { beforeStart, crreateApp } from './app';
 
-const { AppPort } = getStartParams();
+beforeStart();
 
-crreateApp(AppPort);
+crreateApp();

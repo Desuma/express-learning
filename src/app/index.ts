@@ -1,2 +1,2 @@
-export * from './getStartParams';
+export * from './beforeStart';
 export * from './createApp';
