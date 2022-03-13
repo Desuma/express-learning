@@ -1,7 +1,7 @@
 import { assign, isEmpty } from 'lodash';
 import readlineSync from 'readline-sync';
 
-import { E_EXPRESS_DEV_PARAMS, E_EXPRESS_PARAMS } from '~/enums';
+import { E_EXPRESS_DEV_PARAMS, E_EXPRESS_PARAMS, E_MYSQL_DEV_PARAMS, E_MYSQL_PARAMS } from '~/enums';
 import { AppParams } from '~/types';
 import { Ilogger, isDev } from '~/util';
 
@@ -24,9 +24,9 @@ const getAppPort = (): number => {
 
 const getMySQLHost = (): string => {
   const MySQLHost = readlineSync.question(
-    `MySQL Hostname(default ${E_EXPRESS_PARAMS.MySQLHost}):`,
+    `MySQL Hostname(default ${E_MYSQL_PARAMS.Host}):`,
     {
-      defaultInput: E_EXPRESS_PARAMS.MySQLHost,
+      defaultInput: E_MYSQL_PARAMS.Host,
       limit(input: string) {
         return !isEmpty(input);
       },
@@ -39,9 +39,9 @@ const getMySQLHost = (): string => {
 
 const getMySQLPort = (AppPort: number): number => {
   const MySQLPort = readlineSync.questionInt(
-    `MySQL Port(default ${E_EXPRESS_PARAMS.MySQLPort}, range [80-65535], donot be the some that App Port):`,
+    `MySQL Port(default ${E_MYSQL_PARAMS.Port}, range [80-65535], donot be the some that App Port):`,
     {
-      defaultInput: E_EXPRESS_PARAMS.MySQLPort,
+      defaultInput: E_MYSQL_PARAMS.Port,
       limit(input: number) {
         return input >= 80 && input <= 65535 && input !== AppPort;
       },
@@ -53,12 +53,12 @@ const getMySQLPort = (AppPort: number): number => {
 };
 
 const getMySQLName = (): string => {
-  const MySQLName = readlineSync.question(`MySQL Name:`, {
+  const MySQLUser = readlineSync.question(`MySQL Name:`, {
     limit: /^([^\s]|.)+$/i,
     limitMessage: 'Input cannot be empty.'
   });
 
-  return MySQLName;
+  return MySQLUser;
 };
 
 const getMySQLPassword = (): string => {
@@ -71,12 +71,23 @@ const getMySQLPassword = (): string => {
   return MySQLPassword;
 };
 
+
+const getMySQLDatabase = (): string => {
+  const MySQLUser = readlineSync.question(`MySQL Name:`, {
+    limit: /^([^\s]|.)+$/i,
+    limitMessage: 'Input cannot be empty.'
+  });
+
+  return MySQLUser;
+};
+
 export const beforeStart = () => {
   let AppPort: number;
   let MySQLHost: string;
   let MySQLPort: number;
-  let MySQLName: string;
+  let MySQLUser: string;
   let MySQLPassword: string;
+  let MySQLDatabase: string;
 
   Ilogger.info({
     msg: 'Before start initiating app.',
@@ -85,24 +96,27 @@ export const beforeStart = () => {
 
   if (isDev()) {
     AppPort = E_EXPRESS_DEV_PARAMS.AppPort;
-    MySQLHost = E_EXPRESS_DEV_PARAMS.MySQLHost;
-    MySQLPort = E_EXPRESS_DEV_PARAMS.MySQLPort;
-    MySQLName = E_EXPRESS_DEV_PARAMS.MySQLName;
-    MySQLPassword = E_EXPRESS_DEV_PARAMS.MySQLPassword;
+    MySQLHost = E_MYSQL_DEV_PARAMS.Host;
+    MySQLPort = E_MYSQL_DEV_PARAMS.Port;
+    MySQLUser = E_MYSQL_DEV_PARAMS.User;
+    MySQLPassword = E_MYSQL_DEV_PARAMS.Password;
+    MySQLDatabase = E_MYSQL_DEV_PARAMS.Database;
   } else {
     AppPort = getAppPort();
     MySQLHost = getMySQLHost();
     MySQLPort = getMySQLPort(AppPort);
-    MySQLName = getMySQLName();
+    MySQLUser = getMySQLName();
     MySQLPassword = getMySQLPassword();
+    MySQLDatabase = getMySQLDatabase();
   }
 
   assign(params, {
     AppPort,
     MySQLHost,
     MySQLPort,
-    MySQLName,
+    MySQLUser,
     MySQLPassword,
+    MySQLDatabase,
   });
 
   Ilogger.info({
@@ -111,4 +125,6 @@ export const beforeStart = () => {
   });
 };
 
-export const getStartParams = (): AppParams => params;
+export const getStartParams = (): AppParams => {
+  return { ...params };
+};

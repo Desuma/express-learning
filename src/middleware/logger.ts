@@ -1,4 +1,4 @@
-import logger from 'morgan';
+import logger, { TokenIndexer } from 'morgan';
 import path from 'path';
 import fileStrameRotato from 'file-stream-rotator';
 
@@ -11,14 +11,19 @@ import { E_LOG_LEVEL, E_LOG_LEVEL_ENUM } from '~/enums';
  */
 const LOG_LEVEL_MIN = isDev() ? E_LOG_LEVEL_ENUM.INFO : E_LOG_LEVEL_ENUM.WARNING;
 
-const formatLog = (level: E_LOG_LEVEL, tokens: any, req: Request, res: Response) => {
+const formatLog = (
+  level: E_LOG_LEVEL,
+  tokens: TokenIndexer<Request, Response>,
+  req: Request,
+  res: Response
+) => {
   return [
     `[${formatLogLevel(level)}]`,
     `[${tokens.method(req, res)}]`,
     tokens.status(req, res),
     tokens.res(req, res, 'requestId'),
     new Date().toLocaleString('zh-CN', { hour12: false }),
-    decodeURI(tokens.url(req, res)),
+    decodeURI(tokens.url(req, res) || ''),
     JSON.stringify(req.body),
     tokens.res(req, res, 'content-length'),
     '-',
@@ -57,7 +62,7 @@ const accessLogStream = fileStrameRotato.getStream({
 
 export const accessLog = logger(
   (
-    tokens: any, req: Request, res: Response
+    tokens, req: Request, res: Response
   ) => {
     return formatLog(getAccessLogLevel(res), tokens, req, res);
   },

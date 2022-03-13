@@ -1,5 +1,4 @@
 import { E_LOG_LEVEL_ENUM } from "~/enums";
-import { Ilogger } from "~/util";
 
 import { Request, Response } from './express';
 
@@ -39,11 +38,11 @@ export interface ILogParams {
    * Response
    */
   response?: Response;
-}
+};
 
 export interface IDoLogParams extends ILogParams {
   /**
    * 日志级别
    */
   level: E_LOG_LEVEL_ENUM;
-}
+};

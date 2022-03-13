@@ -5,15 +5,15 @@ export interface Request extends express.Request {
    * 请求唯一 ID
    */
   requestId?: string;
-}
+};
 
 export interface Response extends express.Response {
 
-}
+};
 
 export interface NextFunction extends express.NextFunction {
 
-}
+};
 
 export interface AppParams {
   /**
@@ -36,9 +36,13 @@ export interface AppParams {
    * MySQL 登录密码
    */
   MySQLPassword?: string;
-}
+  /**
+   * MySQL 连接数据库
+   */
+  MySQLDatabase?: string;
+};
 
 export default {
   Request,
   Response
-}
+};
