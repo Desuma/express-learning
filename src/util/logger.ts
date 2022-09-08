@@ -2,10 +2,10 @@ import fileStrameRotato from 'file-stream-rotator';
 import path from 'path';
 import { assign, isError } from 'lodash';
 
-import { IDoLogParams, ILogParams, Request, Response, StreamParams } from '~/types';
+import { IDoLogParams, ILogParams, Request, StreamParams } from '~/types';
 import { E_LOG_LEVEL, E_LOG_LEVEL_ENUM } from '~/enums';
 
-import isDev from './express';
+import { isDev } from './express';
 
 /**
  * 最低日志打印等级
@@ -39,26 +39,26 @@ const formatRunningLog = (level: E_LOG_LEVEL, msg: Error | string, req?: Request
   ].join(' ');
 };
 
-const doLog = ({ level, msg, isStart, resquest: req }: IDoLogParams) => {
+const runningLog = ({ level, msg, isStart, resquest: req }: IDoLogParams) => {
   const logMsg = formatRunningLog(E_LOG_LEVEL[level], msg, req);
 
   (isStart || checkRunningLogLevel(level)) && runningLogStream.write(logMsg);
 };
 
 export const logInfo = (params: ILogParams) => {
-  doLog(assign(params, {
+  runningLog(assign(params, {
     level: E_LOG_LEVEL_ENUM.INFO
   }));
 };
 
 export const logWarning = (params: ILogParams) => {
-  doLog(assign(params, {
+  runningLog(assign(params, {
     level: E_LOG_LEVEL_ENUM.WARNING
   }));
 };
 
 export const logError = (params: ILogParams) => {
-  doLog(assign(params, {
+  runningLog(assign(params, {
     level: E_LOG_LEVEL_ENUM.ERROR
   }));
 };
@@ -68,5 +68,3 @@ export const Ilogger = {
   warning: logWarning,
   error: logError,
 };
-
-export default Ilogger;

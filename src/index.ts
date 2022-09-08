@@ -1,5 +1,7 @@
-import { beforeStart, crreateApp } from './app';
+import { beforeAppStart, createConnectionPool, crreateApp } from './app';
 
-beforeStart();
+beforeAppStart();
+
+createConnectionPool();
 
 crreateApp();

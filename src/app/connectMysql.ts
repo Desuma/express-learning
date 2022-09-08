@@ -1,12 +1,18 @@
+import { isEmpty } from 'lodash';
 import mysql, { Pool } from 'mysql';
 
-import { getStartParams } from './beforeStart';
+import { E_MYSQL_ERROR_CODE } from '~/enums';
+import { MysqlReponse, MysqlRequest } from '~/types';
+import { createDefer } from '~/util';
+import { createHijacker } from '~/util/hijacker';
 
-let pool: Pool;
+import { getStartParams } from './beforeAppStart';
+
+const hijacker = createHijacker<Pool>();
 
 export const createConnectionPool = (): Pool => {
   const {
-    MySQLName,
+    MySQLUser,
     MySQLHost,
     MySQLPassword,
     MySQLPort,
@@ -14,9 +20,9 @@ export const createConnectionPool = (): Pool => {
   } = getStartParams();
 
   //创建连接池
-  pool = mysql.createPool({
+  const pool = mysql.createPool({
     host: MySQLHost, // 连接主机名
-    user: MySQLName, // 数据库用户名
+    user: MySQLUser, // 数据库用户名
     password: MySQLPassword, // 数据库密码
     port: MySQLPort, // 数据库端口
     database: MySQLDatabase, // 数据库名称
@@ -27,7 +33,54 @@ export const createConnectionPool = (): Pool => {
     connectionLimit: 1000, // 连接池所允许入队列的最大请求数量
   });
 
+  hijacker.hijack(pool);
+
   return pool;
 };
 
-export const getConnectionPool = (): Pool => pool;
+export const getConnectionPool = hijacker.get;
+
+export const query = ({
+  sql,
+  values = [],
+  timeout = 10 * 1000
+}: MysqlRequest<unknown>): Promise<MysqlReponse> => {
+  if (isEmpty(sql)) {
+    return Promise.reject({
+      code: E_MYSQL_ERROR_CODE.SQL_EMPTY,
+      error: new Error('Query statement is empty')
+    });
+  }
+
+  const pool = getConnectionPool();
+  const defer = createDefer<MysqlReponse>();
+
+  // 建立连接
+  pool.getConnection((e, connection) => {
+    if (e) {
+      return defer.reject({
+        code: E_MYSQL_ERROR_CODE.CONNECT_FAILD,
+        error: e
+      })
+    };
+
+    connection.query({
+      sql,
+      values,
+      timeout
+    }, (error, results) => {
+      if (error) {
+        defer.reject({ code: E_MYSQL_ERROR_CODE.QUERY_FAILD, error });
+      } else {
+        defer.resolve({
+          code: E_MYSQL_ERROR_CODE.QUERY_SUCCEED,
+          data: results
+        });
+      }
+      // 将连接返回到连接池中, 准备让其他人重复使用
+      connection.release();
+    })
+  });
+
+  return defer.promise;
+};

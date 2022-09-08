@@ -5,7 +5,7 @@ import { Ilogger } from '~/util';
 import { uploadRouter, userRouter } from '~/routes';
 import { accessLog, accessNanoid } from '~/middleware';
 
-import { getStartParams } from './beforeStart';
+import { getStartParams } from './beforeAppStart';
 
 export const crreateApp = () => {
   Ilogger.info({

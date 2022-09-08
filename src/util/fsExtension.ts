@@ -18,5 +18,3 @@ export const ifs = {
   mkdirIfNotExits,
   ...fs
 }
-
-export default ifs;
