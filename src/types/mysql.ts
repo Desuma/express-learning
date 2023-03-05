@@ -14,7 +14,6 @@ export interface MysqlReponse {
 
 export interface QueryUserParams {
   username: string;
-  password: string;
+  password?: string;
+  isEncrypt?: boolean;
 };
-
-export type QueryUser = [string, string];

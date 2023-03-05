@@ -1,9 +1,9 @@
 import fileStrameRotato from 'file-stream-rotator';
 import path from 'path';
-import { assign, isError } from 'lodash';
+import { assign, isError, keys } from 'lodash';
 
-import { IDoLogParams, ILogParams, Request, StreamParams } from '~/types';
-import { E_LOG_LEVEL, E_LOG_LEVEL_ENUM } from '~/enums';
+import { IDoLogParams, ILogParams, Request, Response, StreamParams } from '~/types';
+import { E_LOG_LEVEL_ENUM } from '~/enums';
 
 import { isDev } from './express';
 
@@ -12,7 +12,7 @@ import { isDev } from './express';
  */
 const LOG_LEVEL_MIN = isDev() ? E_LOG_LEVEL_ENUM.INFO : E_LOG_LEVEL_ENUM.WARNING;
 
-export const formatLogLevel = (level: E_LOG_LEVEL = E_LOG_LEVEL.INFO): E_LOG_LEVEL => E_LOG_LEVEL[level];
+export const formatLogLevel = (level: E_LOG_LEVEL_ENUM = E_LOG_LEVEL_ENUM.INFO): E_LOG_LEVEL_ENUM => E_LOG_LEVEL_ENUM[level.toString()];
 
 /**
  * 生成running日志文件及所在目录
@@ -28,7 +28,7 @@ const runningLogStream = fileStrameRotato.getStream({
 
 const checkRunningLogLevel = (level: E_LOG_LEVEL_ENUM): boolean => level >= LOG_LEVEL_MIN;
 
-const formatRunningLog = (level: E_LOG_LEVEL, msg: Error | string, req?: Request): string => {
+const formatRunningLog = (level: E_LOG_LEVEL_ENUM, msg?: Error | string, req?: Request, res?: Response): string => {
   return [
     `[${formatLogLevel(level)}]`,
     `[${req?.method ?? 'LOGGER'}]`,
@@ -39,8 +39,8 @@ const formatRunningLog = (level: E_LOG_LEVEL, msg: Error | string, req?: Request
   ].join(' ');
 };
 
-const runningLog = ({ level, msg, isStart, resquest: req }: IDoLogParams) => {
-  const logMsg = formatRunningLog(E_LOG_LEVEL[level], msg, req);
+const runningLog = ({ level, msg, isStart, resquest, response }: IDoLogParams) => {
+  const logMsg = formatRunningLog(level, msg, resquest, response);
 
   (isStart || checkRunningLogLevel(level)) && runningLogStream.write(logMsg);
 };

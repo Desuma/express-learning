@@ -1,30 +1,46 @@
 import logger, { TokenIndexer } from 'morgan';
 import path from 'path';
 import fileStrameRotato from 'file-stream-rotator';
+import { assign, cloneDeep } from 'lodash';
 
 import { formatLogLevel, isDev } from '~/util';
 import { Request, Response, StreamParams } from '~/types';
-import { E_LOG_LEVEL, E_LOG_LEVEL_ENUM } from '~/enums';
+import { E_LOG_LEVEL_ENUM } from '~/enums';
 
 /**
  * 最低日志打印等级
  */
 const LOG_LEVEL_MIN = isDev() ? E_LOG_LEVEL_ENUM.INFO : E_LOG_LEVEL_ENUM.WARNING;
 
+const maskConfig = {
+  '/user/login': ['username', 'password'],
+}
+
+const maskBody = (route: string, body: any) => {
+  const maskParams = maskConfig[route];
+  const cloneBody = cloneDeep(body);
+
+  maskParams?.forEach?.((param: string) => assign(cloneBody, { [param]: '******' }));
+
+  return JSON.stringify(cloneBody);
+};
+
 const formatLog = (
-  level: E_LOG_LEVEL,
+  level: E_LOG_LEVEL_ENUM,
   tokens: TokenIndexer<Request, Response>,
   req: Request,
   res: Response
 ) => {
+  const route = decodeURI(tokens.url(req, res) ?? '');
+
   return [
     `[${formatLogLevel(level)}]`,
     `[${tokens.method(req, res)}]`,
     tokens.status(req, res),
     tokens.res(req, res, 'requestId'),
     new Date().toLocaleString('zh-CN', { hour12: false }),
-    decodeURI(tokens.url(req, res) || ''),
-    JSON.stringify(req.body),
+    route,
+    maskBody(route, req.body),
     tokens.res(req, res, 'content-length'),
     '-',
     tokens['response-time'](req, res),
@@ -32,21 +48,19 @@ const formatLog = (
   ].join(' ');
 };
 
-const getAccessLogLevel = (res: Response): E_LOG_LEVEL => {
-  let level: E_LOG_LEVEL;
-
+const getAccessLogLevel = (res: Response): E_LOG_LEVEL_ENUM => {
   if (res.statusCode < 300) {
-    level = E_LOG_LEVEL.INFO;
+    return E_LOG_LEVEL_ENUM.INFO;
   } else if (res.statusCode < 400) {
-    level = E_LOG_LEVEL.WARNING;
+    return E_LOG_LEVEL_ENUM.WARNING;
   } else {
-    level = E_LOG_LEVEL.ERROR;
+    return E_LOG_LEVEL_ENUM.ERROR;
   }
-
-  return level;
 };
 
-const checkAccessLogLevel = (res: Response): boolean => E_LOG_LEVEL_ENUM[getAccessLogLevel(res)] >= LOG_LEVEL_MIN;
+const checkAccessLogLevel = (res: Response): boolean => {
+  return getAccessLogLevel(res) >= LOG_LEVEL_MIN;
+};
 
 /**
  * 生成access日志文件及所在目录
@@ -69,7 +83,7 @@ export const accessLog = logger(
   {
     stream: accessLogStream,
     skip(_req: Request, res: Response) {
-      return checkAccessLogLevel(res);
+      return !checkAccessLogLevel(res);
     }
   }
 );

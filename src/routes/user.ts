@@ -1,35 +1,51 @@
 import express from 'express';
+import { assign, isEmpty } from 'lodash';
+import { rsaDecrypt } from '~/jsrsasign';
 
-import { queryUser } from '~/query';
+import { createLoggerTemp } from '~/template';
 import { QueryUserParams, Request, Response } from '~/types';
 import { Ilogger } from '~/util';
 
 export const userRouter = express.Router();
 
-userRouter.get('/login', async (req: Request<QueryUserParams>, res: Response) => {
-  Ilogger.info({
-    msg: 'login successed!',
-    resquest: req,
-  });
-
-  const { username, password } = req?.query ?? {};
-
-  const info = await queryUser({ username, password });
-
-  res.send('login successed!');
-});
-
 userRouter.post('/login', async (req: Request<QueryUserParams>, res: Response) => {
-  Ilogger.info({
-    msg: 'login successed!',
-    resquest: req,
+  const loginMsg = createLoggerTemp(req, res);
+  const { body, requestId, db } = req;
+  const { username, password: pwd = '', isEncrypt } = body ?? {};
+  const password = isEncrypt ? rsaDecrypt(pwd) : pwd;
+
+  const userData = await db
+    .select('*')
+    .from('user')
+    .where('username', username)
+    .where('password', password)
+    .queryList();
+
+  if (isEmpty(userData)) {
+    const code = 'LoginFaild.NotFoundUser';
+    const error = new Error(code);
+
+    res.send({
+      error: {
+        code,
+        msg: 'Login faild. Plase check username or password.'
+      },
+      code: 200,
+      requestId,
+    });
+
+    assign(loginMsg, { error });
+
+    return Ilogger.error(loginMsg);
+  }
+
+  res.send({
+    data: 'login successed!',
+    code: 200,
+    requestId,
   });
 
-  const { username, password } = req?.body ?? {};
-
-  const info = await queryUser({ username, password });
-
-  res.send('login successed2!');
+  Ilogger.info(loginMsg);
 });
 
 export default userRouter;

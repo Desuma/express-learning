@@ -25,7 +25,7 @@ export interface ILogParams {
   /**
    * 日志信息
    */
-  msg: string | Error;
+  msg?: string | Error;
   /**
    * 是否是启动日志
    */

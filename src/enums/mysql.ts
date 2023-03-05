@@ -51,10 +51,3 @@ export enum E_MYSQL_ERROR_CODE {
    */
   QUERY_FAILD = 10003,
 };
-
-export enum E_QUERY_SQL {
-  /**
-   * 查询指定用户
-   */
-  USER = 'SELECT * FROM user WHERE username=? & password=?;',
-};
